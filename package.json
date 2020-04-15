@@ -1,0 +1,35 @@
+{
+  "name": "hyperplex",
+  "version": "1.0.0",
+  "description": "Multiplex encrypted connections to peers over Hyperswarm",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/RangerMauve/hyperplex.git"
+  },
+  "keywords": [
+    "p2p",
+    "multiplex",
+    "dweb",
+    "hyperswarm",
+    "swarm"
+  ],
+  "author": "rangermauve",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/RangerMauve/hyperplex/issues"
+  },
+  "homepage": "https://github.com/RangerMauve/hyperplex#readme",
+  "dependencies": {
+    "hyperswarm": "^2.11.2",
+    "multiplex": "^6.7.0",
+    "noise-peer": "^1.1.0",
+    "pump": "^3.0.0"
+  },
+  "devDependencies": {
+    "supertape": "^1.2.4"
+  }
+}
