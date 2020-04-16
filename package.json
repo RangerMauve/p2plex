@@ -1,14 +1,14 @@
 {
-  "name": "hyperplex",
+  "name": "p2plex",
   "version": "1.0.0",
-  "description": "Multiplex encrypted connections to peers over Hyperswarm",
+  "description": "Multiplex encrypted connections to peers over a p2p network",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "node test"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/RangerMauve/hyperplex.git"
+    "url": "git+https://github.com/RangerMauve/p2plex.git"
   },
   "keywords": [
     "p2p",
@@ -20,9 +20,9 @@
   "author": "rangermauve",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/RangerMauve/hyperplex/issues"
+    "url": "https://github.com/RangerMauve/p2plex/issues"
   },
-  "homepage": "https://github.com/RangerMauve/hyperplex#readme",
+  "homepage": "https://github.com/RangerMauve/p2plex#readme",
   "dependencies": {
     "hyperswarm": "^2.11.2",
     "multiplex": "^6.7.0",

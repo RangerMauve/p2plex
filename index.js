@@ -4,9 +4,9 @@ const noisePeer = require('noise-peer')
 const EventEmitter = require('events')
 const pump = require('pump')
 
-module.exports = (opts) => new Hyperplex(opts)
+module.exports = (opts) => new P2Plex(opts)
 
-class Hyperplex extends EventEmitter {
+class P2Plex extends EventEmitter {
   constructor ({
     keyPair,
     listenSelf = true,
@@ -34,8 +34,8 @@ class Hyperplex extends EventEmitter {
     const { client } = info
 
     const sec = noisePeer(socket, client, {
-      ...this.opts,
       pattern: 'XX',
+      ...this.opts,
       staticKeyPair: this.keyPair,
       onstatickey: (remoteStaticKey, done) => {
         const publicKey = Buffer.from(remoteStaticKey)
@@ -45,9 +45,16 @@ class Hyperplex extends EventEmitter {
 
         const plex = multiplex()
 
-        const peer = new Peer(publicKey, plex, info, (...args) => {
-          sec.end(...args)
-        })
+        function disconnect () {
+          return new Promise((resolve, reject) => {
+            sec.end((err) => {
+              if (err) reject(err)
+              else resolve()
+            })
+          })
+        }
+
+        const peer = new Peer(publicKey, plex, info, disconnect)
 
         this.peers.add(peer)
 
@@ -55,8 +62,8 @@ class Hyperplex extends EventEmitter {
 
         pump(sec, plex, sec, (err) => {
           if (err) peer.emit('error', err)
-          peer.emit('close')
           this.peers.delete(peer)
+          peer.emit('disconnected')
         })
       }
     })
@@ -64,6 +71,11 @@ class Hyperplex extends EventEmitter {
 
   // Connect to a peer based on their public key
   async findByPublicKey (publicKey) {
+    // Check if we've already connected to this peer
+    for (const peer of this.peers) {
+      if (peer.publicKey.equals(publicKey)) return peer
+    }
+
     this.join(publicKey, { announce: false, lookup: true })
     const peer = await new Promise((resolve) => {
       const onconnection = (peer) => {
@@ -95,9 +107,11 @@ class Hyperplex extends EventEmitter {
   }
 
   async destroy () {
-    for (const peer of this.peers) {
-      peer.disconnect()
-    }
+    const allPeers = [...this.peers]
+    await Promise.all(allPeers.map((peer) => {
+      return peer.disconnect()
+    }))
+
     return new Promise((resolve, reject) => {
       this.swarm.destroy((err) => {
         if (err) reject(err)

@@ -1,11 +1,11 @@
 const test = require('supertape')
 const { once } = require('events')
 
-const Hyperplex = require('./')
+const P2Plex = require('./')
 
 test('kitchen sink', async (t) => {
-  const p1 = Hyperplex()
-  const p2 = Hyperplex()
+  const p1 = P2Plex()
+  const p2 = P2Plex()
 
   const [[peer1], peer2] = await Promise.all([
     once(p1, 'connection'),
