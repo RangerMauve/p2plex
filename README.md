@@ -141,3 +141,7 @@ Tell the swarm to avoid connecting to this peer in the future. This can be usefu
 ### `await peer.disconnect()`
 
 Gracefully disconnects from the peer and resolves once the disconnection is complete.
+
+## Credits
+
+Big thanks to [playproject.io](https://playproject.io/) for sponsoring this work for use in the [DatDot](https://playproject.io/datdot-service/) project.
