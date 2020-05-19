@@ -77,13 +77,13 @@ class P2Plex extends EventEmitter {
   }
 
   // Find a peer for a given topic with a given public key
-  async findByTopicAndPublicKey (topic, publicKey) {
+  async findByTopicAndPublicKey (topic, publicKey, options = { announce: false, lookup: true }) {
     // Check if we've already connected to this peer
     for (const peer of this.peers) {
       if (peer.publicKey.equals(publicKey) && peer.hasTopic(topic)) return peer
     }
 
-    this.join(publicKey, { announce: false, lookup: true })
+    this.join(publicKey, options)
     const peer = await new Promise((resolve) => {
       const onconnection = (peer) => {
         const { publicKey: remoteKey } = peer
