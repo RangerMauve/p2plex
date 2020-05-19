@@ -59,6 +59,7 @@ class P2Plex extends EventEmitter {
         this.peers.add(peer)
 
         this.emit('connection', peer)
+        info.on('topic', () => this.emit('connection', peer))
 
         pump(sec, plex, sec, (err) => {
           if (err) peer.emit('error', err)
@@ -70,10 +71,16 @@ class P2Plex extends EventEmitter {
   }
 
   // Connect to a peer based on their public key
+  // Connects to a topic with their public key
   async findByPublicKey (publicKey) {
+    return this.findByTopicAndPublicKey(publicKey, publicKey)
+  }
+
+  // Find a peer for a given topic with a given public key
+  async findByTopicAndPublicKey (topic, publicKey) {
     // Check if we've already connected to this peer
     for (const peer of this.peers) {
-      if (peer.publicKey.equals(publicKey)) return peer
+      if (peer.publicKey.equals(publicKey) && peer.hasTopic(topic)) return peer
     }
 
     this.join(publicKey, { announce: false, lookup: true })
@@ -82,6 +89,7 @@ class P2Plex extends EventEmitter {
         const { publicKey: remoteKey } = peer
 
         if (!remoteKey.equals(publicKey)) return
+        if (!peer.hasTopic(topic)) return
         this.removeListener('connection', onconnection)
         resolve(peer)
       }
@@ -146,6 +154,13 @@ class Peer extends EventEmitter {
     if (this.info.topics) return this.info.topics
     if (this.info.peer && this.info.peer.topic) return this.info.peer.topic
     return []
+  }
+
+  hasTopic (topic) {
+    for (const existing of this.topics) {
+      if (existing.equals(topic)) return true
+    }
+    return false
   }
 
   createStream (...args) {

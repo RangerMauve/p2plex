@@ -68,6 +68,15 @@ You should probably wrap this in a timeout. PRs for introducing cancellation wou
 - `publicKey` is a Buffer containing the other peers' public key.
 - `peer`: is a `Peer` object representing the connection to someone in the network.
 
+### `const peer = await plex.findByTopicAndPublicKey(topic, publicKey)`
+
+This method will attempt to discover a peer under a given topic with a given public key.
+You should probably wrap this in a timeout. PRs for introducing cancellation would be appreciated.
+
+- `topic` should be a 32 byte Buffer which is the key you want to use to find other peers.
+- `publicKey` is a Buffer containing the other peers' public key.
+- `peer`: is a `Peer` object representing the connection to someone in the network.
+
 ### `await plex.join(topic, {announce: false, lookup: true})`
 
 Starts finding peers on the network.
