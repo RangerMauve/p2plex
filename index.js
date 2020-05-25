@@ -3,6 +3,9 @@ const multiplex = require('multiplex')
 const noisePeer = require('noise-peer')
 const EventEmitter = require('events')
 const pump = require('pump')
+const getStream = require('get-stream')
+
+const METADATA_NAME = 'p2plex-topics'
 
 module.exports = (opts) => new P2Plex(opts)
 
@@ -58,16 +61,24 @@ class P2Plex extends EventEmitter {
 
         this.peers.add(peer)
 
-        this.emit('connection', peer)
-        info.on('topic', () => this.emit('connection', peer))
-
         pump(sec, plex, sec, (err) => {
           if (err) peer.emit('error', err)
           this.peers.delete(peer)
           peer.emit('disconnected')
         })
+
+        peer.init().then(() => {
+          this.emit('connection', peer)
+
+          info.on('topic', () => this.emit('connection', peer))
+
+          // Emit events for all the topics it already has
+          peer.emitTopics()
+        }, (e) => this.emit('error', e))
       }
     })
+
+    info.stream = sec
   }
 
   // Connect to a peer based on their public key
@@ -83,7 +94,7 @@ class P2Plex extends EventEmitter {
       if (peer.publicKey.equals(publicKey) && peer.hasTopic(topic)) return peer
     }
 
-    this.join(publicKey, options)
+    this.join(topic, options)
     const peer = await new Promise((resolve) => {
       const onconnection = (peer) => {
         const { publicKey: remoteKey } = peer
@@ -97,7 +108,7 @@ class P2Plex extends EventEmitter {
       this.on('connection', onconnection)
     })
 
-    await this.leave(publicKey)
+    await this.leave(topic)
 
     return peer
   }
@@ -137,23 +148,36 @@ class Peer extends EventEmitter {
     this.info = info
     this.incoming = !info.client
     this.disconnect = disconnect
+    this.otherTopics = []
 
     plex.on('stream', (stream, id) => this.emit('stream', stream, id))
     plex.on('error', (err) => this.emit('error', err))
 
     this.info.on('topic', (topic) => this.emit('topic', topic))
+  }
 
-    process.nextTick(() => {
-      for (const topic of this.topics) {
-        this.emit('topic', topic)
-      }
-    })
+  async init () {
+    const metadata = this.createSharedStream(METADATA_NAME, { encoding: 'utf8' })
+
+    metadata.end(JSON.stringify(this.topics))
+
+    const otherTopicsJSON = await getStream(metadata)
+
+    const otherTopicsParsed = JSON.parse(otherTopicsJSON)
+    this.otherTopics = otherTopicsParsed.map((topic) => Buffer.from(topic))
+  }
+
+  emitTopics () {
+    for (const topic of this.topics) {
+      this.emit('topic', topic)
+    }
   }
 
   get topics () {
-    if (this.info.topics) return this.info.topics
-    if (this.info.peer && this.info.peer.topic) return this.info.peer.topic
-    return []
+    const topics = this.otherTopics.slice(0)
+    if (this.info.topics) topics.push(...this.info.topics)
+    else if (this.info.peer && this.info.peer.topic) topics.push(this.info.peer.topic)
+    return topics
   }
 
   hasTopic (topic) {

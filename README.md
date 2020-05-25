@@ -73,6 +73,8 @@ You should probably wrap this in a timeout. PRs for introducing cancellation wou
 This method will attempt to discover a peer under a given topic with a given public key.
 If you don't specify the announce and lookup options, the defaults will be used.
 You should probably wrap this in a timeout. PRs for introducing cancellation would be appreciated.
+**Note:** There's currently a bug where the deduplication logic ends up emitting errors. To mitigate this, have one side set `announce:true,lookup:false` and the other side set `announce:false,lookup:true`.
+
 
 - `topic` should be a 32 byte Buffer which is the key you want to use to find other peers.
 - `publicKey` is a Buffer containing the other peers' public key.

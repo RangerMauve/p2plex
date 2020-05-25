@@ -24,6 +24,7 @@
   },
   "homepage": "https://github.com/RangerMauve/p2plex#readme",
   "dependencies": {
+    "get-stream": "^5.1.0",
     "hyperswarm": "^2.11.2",
     "multiplex": "^6.7.0",
     "noise-peer": "^1.1.0",
