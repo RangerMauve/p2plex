@@ -149,8 +149,8 @@ class Peer extends EventEmitter {
     this.incoming = !info.client
     this.disconnect = disconnect
     this.otherTopics = []
+    this.streamCount = 0
 
-    plex.on('stream', (stream, id) => this.emit('stream', stream, id))
     plex.on('error', (err) => this.emit('error', err))
 
     this.info.on('topic', (topic) => this.emit('topic', topic))
@@ -165,6 +165,30 @@ class Peer extends EventEmitter {
 
     const otherTopicsParsed = JSON.parse(otherTopicsJSON)
     this.otherTopics = otherTopicsParsed.map((topic) => Buffer.from(topic))
+  }
+
+  _handleStream (stream, id) {
+    // Count the streams we have and auto-close when we have no more
+    if (id !== METADATA_NAME) {
+      this.streamCount++
+      const cleanup = () => {
+				this.streamCount--
+        process.nextTick(() => {
+          if (!this.streamCount) this.disconnect()
+        })
+
+        // Streams are such a pain in the ass. Why doesn't `close` always work?
+        stream.removeListener('end', cleanup)
+        stream.removeListener('close', cleanup)
+      }
+      stream.once('end', cleanup)
+      stream.once('finish', cleanup)
+    }
+    this.emit('stream', stream, id)
+
+    function cleanup() {
+
+    }
   }
 
   emitTopics () {
@@ -187,16 +211,22 @@ class Peer extends EventEmitter {
     return false
   }
 
-  createStream (...args) {
-    return this.plex.createStream(...args)
+  createStream (id, options = {}) {
+    const stream = this.plex.createStream(id, { emitClose: true, ...options })
+    this._handleStream(stream, id)
+    return stream
   }
 
-  receiveStream (...args) {
-    return this.plex.receiveStream(...args)
+  receiveStream (id, options = {}) {
+    const stream = this.plex.receiveStream(id, { emitClose: true, ...options })
+    this._handleStream(stream, id)
+    return stream
   }
 
-  createSharedStream (...args) {
-    return this.plex.createSharedStream(...args)
+  createSharedStream (id, options = {}) {
+    const stream = this.plex.createSharedStream(id, { emitClose: true, ...options })
+    this._handleStream(stream, id)
+    return stream
   }
 
   ban () {

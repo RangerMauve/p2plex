@@ -28,6 +28,15 @@ test('Find by public key and send data', async (t) => {
 
   t.deepEquals(data, toWrite, 'Got data')
 
+  stream1.end()
+
+  await Promise.all([
+    once(peer1, 'disconnected'),
+    once(peer2, 'disconnected')
+  ])
+
+  t.pass('Peers disconnected after closing streams')
+
   await Promise.all([
     p1.destroy(),
     p2.destroy()
@@ -63,6 +72,15 @@ test('Find by public key and send data', async (t) => {
   const [data] = await once(stream1, 'data')
 
   t.deepEquals(data, toWrite, 'Got data')
+
+  stream1.end()
+
+  await Promise.all([
+    once(peer1, 'disconnected'),
+    once(peer2, 'disconnected')
+  ])
+
+  t.pass('Peers disconnected after closing streams')
 
   await Promise.all([
     p1.destroy(),

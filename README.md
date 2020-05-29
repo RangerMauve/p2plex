@@ -27,6 +27,8 @@ plex2.findByPublicKey(plex1.publicKey).then((peer) => {
 ## How it works
 
 This module combines [Hyperswarm](https://github.com/hyperswarm/hyperswarm) for P2P networking, [Noise-peer](https://github.com/emilbayes/noise-peer) for encrypted communication, and [Multiplex](https://www.npmjs.com/package/multiplex) for sending multiple streams over a single connection.
+The deduplication happens under the hood. Your application should focus on opening and closing streams on peers and not worry about whether the peer has just connected or it was connected already.
+Once all the multiplexed streams for a peer end, the connection will be dropped automatically.
 
 ## API
 
