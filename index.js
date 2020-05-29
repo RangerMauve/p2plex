@@ -108,7 +108,8 @@ class P2Plex extends EventEmitter {
       this.on('connection', onconnection)
     })
 
-    await this.leave(topic)
+		// Leaving takes a long time if we announced, do it async
+    this.leave(topic)
 
     return peer
   }
@@ -185,10 +186,6 @@ class Peer extends EventEmitter {
       stream.once('finish', cleanup)
     }
     this.emit('stream', stream, id)
-
-    function cleanup() {
-
-    }
   }
 
   emitTopics () {
