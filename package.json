@@ -26,11 +26,12 @@
   "dependencies": {
     "get-stream": "^5.1.0",
     "hyperswarm": "^2.11.2",
+    "is-buffer": "^2.0.4",
     "multiplex": "^6.7.0",
-    "noise-peer": "^1.1.0",
+    "noise-peer": "^2.1.0",
     "pump": "^3.0.0"
   },
   "devDependencies": {
-    "supertape": "^1.2.4"
+    "supertape": "^2.0.1"
   }
 }

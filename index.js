@@ -4,6 +4,7 @@ const noisePeer = require('noise-peer')
 const EventEmitter = require('events')
 const pump = require('pump')
 const getStream = require('get-stream')
+const isBuffer = require('is-buffer')
 
 const METADATA_NAME = 'p2plex-topics'
 
@@ -17,11 +18,22 @@ class P2Plex extends EventEmitter {
   } = {}) {
     super()
     this.opts = opts
-    this.keyPair = keyPair || noisePeer.keygen()
     this.swarm = hyperswarm({
       multiplex: true,
       ...opts
     })
+
+    let { publicKey, secretKey } = opts.keyPair || noisePeer.keygen()
+    if (!isBuffer(publicKey)) {
+      publicKey = Buffer.from(publicKey)
+    }
+    if (!isBuffer(secretKey)) {
+      secretKey = Buffer.from(secretKey)
+    }
+    this.keyPair = {
+      publicKey,
+      secretKey,
+    }
 
     this.peers = new Set()
 
