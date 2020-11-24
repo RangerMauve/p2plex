@@ -32,7 +32,7 @@ class P2Plex extends EventEmitter {
     }
     this.keyPair = {
       publicKey,
-      secretKey,
+      secretKey
     }
 
     this.peers = new Set()
@@ -47,6 +47,8 @@ class P2Plex extends EventEmitter {
 
   _handleConnection (socket, info) {
     const { client } = info
+
+    const onPreInitError = (err) => this.emit('error', err)
 
     const sec = noisePeer(socket, client, {
       pattern: 'XX',
@@ -73,6 +75,8 @@ class P2Plex extends EventEmitter {
 
         this.peers.add(peer)
 
+        sec.removeListener('error', onPreInitError)
+
         pump(sec, plex, sec, (err) => {
           if (err) peer.emit('error', err)
           this.peers.delete(peer)
@@ -89,6 +93,8 @@ class P2Plex extends EventEmitter {
         }, (e) => this.emit('error', e))
       }
     })
+
+    sec.on('error', onPreInitError)
 
     info.stream = sec
   }
@@ -120,7 +126,7 @@ class P2Plex extends EventEmitter {
       this.on('connection', onconnection)
     })
 
-		// Leaving takes a long time if we announced, do it async
+    // Leaving takes a long time if we announced, do it async
     this.leave(topic)
 
     return peer
@@ -185,7 +191,7 @@ class Peer extends EventEmitter {
     if (id !== METADATA_NAME) {
       this.streamCount++
       const cleanup = () => {
-				this.streamCount--
+        this.streamCount--
         process.nextTick(() => {
           if (!this.streamCount) this.disconnect()
         })
