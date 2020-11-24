@@ -1,6 +1,6 @@
 {
   "name": "p2plex",
-  "version": "1.4.0",
+  "version": "1.5.0",
   "description": "Multiplex encrypted connections to peers over a p2p network",
   "main": "index.js",
   "scripts": {
